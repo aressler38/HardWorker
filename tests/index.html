@@ -3,14 +3,14 @@
 <head>
 </head>
 <body>
-    
     <script src="../lib/require.js"></script>
     <script>
         require(["../HardWorker"], function(HardWorker) {
-            var workerScript = "../main.js";
-            var w = new HardWorker({url:workerScript});
-            w.postMessage("hi");
-            this.w=w;
+            window.w = new HardWorker();
+
+            w.on("generic", function(event) {
+                console.log(event);
+            });
         });
     </script>
 </body>
