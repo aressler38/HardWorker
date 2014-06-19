@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+    
+    <script src="../lib/require.js"></script>
+    <script>
+        require(["../HardWorker"], function(HardWorker) {
+            var workerScript = "../main.js";
+            var w = new HardWorker({url:workerScript});
+            w.postMessage("hi");
+            this.w=w;
+        });
+    </script>
+</body>
+</html>
