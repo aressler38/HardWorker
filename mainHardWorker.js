@@ -1,4 +1,8 @@
-var events = {};
+var that = this;
+// like a hash table
+var events = {
+    "loadModule": [loadModule]
+};
 
 this.onmessage = eventHandler;
 
@@ -69,4 +73,20 @@ function eventHandler(event) {
     else {
         console.warn("I see no event handler callbacks for message="+event.data.message);
     }
+}
+
+/**
+ * Make a new XHR and load the list of modules
+ * @param moduleName string representing the path to the module
+ */
+function loadModule(moduleName) {
+    var xhr = new XMLHttpRequest();
+    var result = null;
+    xhr.open("GET", moduleName);
+    xhr.onload = function(event) {
+        result = eval(event.target.response); 
+        that.on(moduleName, result);
+        reply("moduleReady", "OK");
+    };
+    xhr.send();
 }

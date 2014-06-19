@@ -8,6 +8,7 @@ define([
         for (var thing in extension) {
             base[thing] = extension[thing];
         }
+        return base;
     }
 
     /**
@@ -16,21 +17,35 @@ define([
      * Web Worker.
      */
     function HardWorker(config) {
-        config = (typeof config === "object") ? config : {
+        var that = this;
+        var defaultConfig = { 
             url: "mainHardWorker.js" 
         };
-        configManager(config);
-        var that = this;
+        // this is like a hash table...
         var events = {
             // "some event" : [list of callbacks]
+            "moduleReady" : [function() {console.log("THE MODULE IS READY!");}]
         };
+        config = (typeof config === "object") ? config : defaultConfig; 
+        config = extend(defaultConfig, config);
+        configManager(config);
 
-        this.on = function(event, callback, context) {
-            context = (!context) ? this : context;
-            if (events[event] === undefined) {
-                events[event] = [];
+        /**
+         * Load some 'moduleName' into the worker. When the module is executed, the reverseTrigger 
+         * will fire the associated 'handler' function. The 'callback' is a function that is executed
+         * after the worker has loaded and executed the file corresponding to 'moduleName'
+         */
+        this.on = function(moduleName, handler, callback) {
+            if (events[moduleName] === undefined) {
+                events[moduleName] = [];
             }
-            events[event].push(callback);
+            events[moduleName].push(handler);
+
+            postMessage({
+                "message" : "loadModule",
+                "data": moduleName
+            });
+
             return this;
         };
 
@@ -49,11 +64,18 @@ define([
             return this;
         }
 
+        this.trigger = function(event, data) {
+            postMessage({
+                message:event, 
+                data: data
+            });
+        };
+
         /**
-         * Trigger an event, and pass arbitrary data to it
+         * This is the method that the worker uses to trigger a callback on the HardWorker object.
          * @param {Object} event EventHandler filters the event, so event.data.message has a callback
          */
-        function trigger(event) {
+        function reverseTrigger(event) {
             events[event.data.message].forEach(function(callback, idx, self) {
                 callback(event.data.data);
             });
@@ -64,7 +86,7 @@ define([
 
         // proxy to worker
         // TODO: deprecate
-        this.postMessage = function() {
+        function postMessage() {
             if (typeof arguments[0] === "string") {
                 arguments[0] = {message: "hello", data:arguments[0]};
             }
@@ -82,7 +104,7 @@ define([
                 return null;
             }
             if (events[event.data.message] !== undefined) {
-                trigger(event);
+                reverseTrigger(event);
             }
             else {
                 console.warn("I see no event handler callbacks for message="+event.data.message);

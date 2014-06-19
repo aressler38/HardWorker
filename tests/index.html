@@ -6,9 +6,9 @@
     <script src="../lib/require.js"></script>
     <script>
         require(["../HardWorker"], function(HardWorker) {
-            window.w = new HardWorker();
+            window.w = new HardWorker({url:"../mainHardWorker.js"});
 
-            w.on("generic", function(event) {
+            w.on("test.js", function(event) {
                 console.log(event);
             });
         });
