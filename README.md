@@ -10,6 +10,9 @@ Create a hardWorker
 
 load an external script that you want to be executed on a `trigger` call.
 
-    hardWorker.loadModule({name: "myModule", path:"./modules/tasks/task1.js"}, workerCallback, XHRCallback);
+    hardWorker.loadModule({
+        name: "myModule", 
+        path:"./modules/tasks/task1.js"
+    }, workerCallback, XHRCallback);
 
 
