@@ -15,11 +15,11 @@ this.on = function(event, callback, context) {
 };
 
 this.off = function(event, callbackToRemove) {
-    if (!event || !callback) { throw new Error("off requires the event string and function reference"); }
+    if (!event || !callbackToRemove) { throw new Error("off requires the event string and function reference"); }
     if (events[event] !== undefined) {
         events[event].every(function(callback, idx, callbacks) {
             if (callbackToRemove === callback) {
-                callback.splice(1, idx); // splice out the callback
+                callbacks.splice(1, idx); // splice out the callback
                 return false; // exit the every loop
             }
             else { return true; }
@@ -27,7 +27,7 @@ this.off = function(event, callbackToRemove) {
     }
     else { console.warn("I can't unbind that callback because it's not in the events table"); }
     return this;
-}
+};
 
 /**
  * Trigger an event, and pass arbitrary data to it
@@ -86,7 +86,7 @@ function loadModule(moduleName) {
     xhr.onload = function(event) {
         result = eval(event.target.response); 
         that.on(moduleName, result);
-        reply("moduleReady", "OK");
+        reply("moduleReady", moduleName);
     };
     xhr.send();
 }

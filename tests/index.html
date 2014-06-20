@@ -8,9 +8,15 @@
         require(["../HardWorker"], function(HardWorker) {
             window.w = new HardWorker({url:"../mainHardWorker.js"});
 
-            w.on("test.js", function(event) {
+
+            w.loadModule("test.js", function(event) {
                 console.log(event);
+            }, function() {
+                console.log("testjs is ready???");
+                w.trigger("test.js", {data:1});
             });
+
+
         });
     </script>
 </body>

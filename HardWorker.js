@@ -18,15 +18,18 @@ define([
      */
     function HardWorker(config) {
         var that = this;
-        var defaultConfig = { 
+        var defaultConfig = {
             url: "mainHardWorker.js" 
         };
         // this is like a hash table...
         var events = {
             // "some event" : [list of callbacks]
-            "moduleReady" : [function() {console.log("THE MODULE IS READY!");}]
+            "moduleReady" : [moduleLoadedHandler]
         };
-        config = (typeof config === "object") ? config : defaultConfig; 
+        var pending = {
+            modules: []
+        };
+        config = (typeof config === "object") ? config : defaultConfig;
         config = extend(defaultConfig, config);
         configManager(config);
 
@@ -35,11 +38,10 @@ define([
          * will fire the associated 'handler' function. The 'callback' is a function that is executed
          * after the worker has loaded and executed the file corresponding to 'moduleName'
          */
-        this.on = function(moduleName, handler, callback) {
-            if (events[moduleName] === undefined) {
-                events[moduleName] = [];
-            }
-            events[moduleName].push(handler);
+        this.loadModule = function(moduleName, handler, callback) {
+            this.on(moduleName, handler);
+            
+            pending.modules.push({moduleName:moduleName, callback:callback});
 
             postMessage({
                 "message" : "loadModule",
@@ -49,12 +51,20 @@ define([
             return this;
         };
 
+        this.on = function(event, handler) {
+            if (events[event] === undefined) {
+                events[event] = [];
+            }
+            events[event].push(handler);
+            return this;
+        };
+
         this.off = function(event, callbackToRemove) {
-            if (!event || !callback) { throw new Error("off requires the event string and function reference"); }
+            if (!event || !callbackToRemove) { throw new Error("off requires the event string and function reference"); }
             if (events[event] !== undefined) {
                 events[event].every(function(callback, idx, callbacks) {
                     if (callbackToRemove === callback) {
-                        callback.splice(1, idx); // splice out the callback
+                        callbacks.splice(1, idx); // splice out the callback
                         return false; // exit the every loop
                     }
                     else { return true; }
@@ -62,9 +72,10 @@ define([
             }
             else { console.warn("I can't unbind that callback because it's not in the events table"); }
             return this;
-        }
+        };
 
         this.trigger = function(event, data) {
+            
             postMessage({
                 message:event, 
                 data: data
@@ -103,7 +114,7 @@ define([
                 console.warn("I don't recognize the web worker event... maybe it isn't for me?");
                 return null;
             }
-            if (events[event.data.message] !== undefined) {
+            if (events[event.data.message] !== undefined && events[event.data.message].length) {
                 reverseTrigger(event);
             }
             else {
@@ -114,6 +125,14 @@ define([
         function configManager(config) {
             if (!config.url) { throw new Error("missing a url"); }
             return;
+        }
+
+        function moduleLoadedHandler(moduleName) {
+            pending.modules.every(function(module, idx) {
+                if (moduleName === module.moduleName) {
+                    module.callback();
+                }
+            });
         }
 
         return this;
