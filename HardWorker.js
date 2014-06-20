@@ -24,7 +24,7 @@ define([
         // this is like a hash table...
         var events = {
             // "some event" : [list of callbacks]
-            "moduleReady" : [moduleLoadedHandler]
+            "moduleReady" : [moduleReadyHandler]
         };
         var pending = {
             modules: []
@@ -37,15 +37,16 @@ define([
          * Load some 'moduleName' into the worker. When the module is executed, the reverseTrigger 
          * will fire the associated 'handler' function. The 'callback' is a function that is executed
          * after the worker has loaded and executed the file corresponding to 'moduleName'
+         * @param module an object containing 'name' and 'path' keys.
          */
-        this.loadModule = function(moduleName, handler, callback) {
-            this.on(moduleName, handler);
+        this.loadModule = function(module, handler, callback) {
+            this.on(module.name, handler);
             
-            pending.modules.push({moduleName:moduleName, callback:callback});
+            pending.modules.push({name: module.name, callback:callback});
 
             postMessage({
                 "message" : "loadModule",
-                "data": moduleName
+                "data": module
             });
 
             return this;
@@ -127,11 +128,20 @@ define([
             return;
         }
 
-        function moduleLoadedHandler(moduleName) {
+        /**
+         *
+         * Run the callback that was bound when loadModule was called. 
+         * This is the callback of the XHR that is initiated within the worker.
+         * The worker triggers moduleReady with the string representing the 
+         * module.name. 
+         */
+        function moduleReadyHandler(moduleName) {
             pending.modules.every(function(module, idx) {
-                if (moduleName === module.moduleName) {
+                if (moduleName === module.name) {
                     module.callback();
+                    return false;
                 }
+                return true;
             });
         }
 

@@ -79,14 +79,14 @@ function eventHandler(event) {
  * Make a new XHR and load the list of modules
  * @param moduleName string representing the path to the module
  */
-function loadModule(moduleName) {
+function loadModule(module) {
     var xhr = new XMLHttpRequest();
     var result = null;
-    xhr.open("GET", moduleName);
+    xhr.open("GET", module.path);
     xhr.onload = function(event) {
         result = eval(event.target.response); 
-        that.on(moduleName, result);
-        reply("moduleReady", moduleName);
+        that.on(module.name, result);
+        reply("moduleReady", module.name);
     };
     xhr.send();
 }
