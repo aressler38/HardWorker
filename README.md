@@ -19,7 +19,7 @@ load an external script that you want to be executed on a `trigger` call.
     }, workerCallback, XHRCallback);
 
 
-## TODOs ## 
+## TODOs 
 * Events on the HardWorker and mainHardWorker are organized in tables, but I am not yet able to 
 differentiate the event callback results that are created in the mainHardWorker's trigger method.
 I will need to add some additional metadata that helps me map the results of the trigger callbacks
