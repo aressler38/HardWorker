@@ -1,19 +1,25 @@
 var that = this;
-// like a hash table
+
+// like a hash table ... 92 octaves below the lowest B-flat
 var events = {
     "loadModule": [loadModule]
 };
 
 this.onmessage = eventHandler;
 
-this.on = function(event, callback, context) {
-    context = (!context) ? this : context;
+/**
+ * This method binds a string to a function in this context.
+ */
+this.on = function(event, callback) {
     if (events[event] === undefined) {
         events[event] = [];
     }
     events[event].push(callback);
 };
 
+/**
+ * SPLICE a callback from the events table.
+ */
 this.off = function(event, callbackToRemove) {
     if (!event || !callbackToRemove) { throw new Error("off requires the event string and function reference"); }
     if (events[event] !== undefined) {
@@ -30,6 +36,7 @@ this.off = function(event, callbackToRemove) {
 };
 
 /**
+ * @meow
  * Trigger an event, and pass arbitrary data to it
  * @param {Object} event EventHandler filters the event, so event.data.message has a callback
  */
@@ -49,6 +56,9 @@ function whoami() {
     return stuff;
 }
 
+/**
+ * Wraper around postMessage! This method will format the inputs and call postMessage
+ */
 function reply(type, data) {
     if (data === undefined) {
         data = type;
@@ -57,8 +67,7 @@ function reply(type, data) {
     if (data === undefined) { throw new Error ("no type, no data, no go."); } // 2nd check 
     postMessage({
         message: type,
-        data:data,
-        extra: "reply from the worker..."
+        data:data
     });
 }
 
@@ -84,7 +93,7 @@ function loadModule(module) {
     var result = null;
     xhr.open("GET", module.path);
     xhr.onload = function(event) {
-        result = eval(event.target.response); 
+        result = eval(event.target.response);  //TODO eval? what about AMD or require?
         that.on(module.name, result);
         reply("moduleReady", module.name);
     };
