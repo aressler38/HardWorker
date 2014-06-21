@@ -1,6 +1,5 @@
-define([
-    "./lib/utils/Events" // DO I NEED EVENTS????
-], function(Events) {
+define([ 
+], function() {
 
     // not as powerful as jQuery's extend, but it serves its purpose
     /** @deprecated */
