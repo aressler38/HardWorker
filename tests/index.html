@@ -8,17 +8,21 @@
         require(["../HardWorker"], function(HardWorker) {
             window.w = new HardWorker({url:"../mainHardWorker.js"});
 
-
             w.loadModule({
                 name: "test",
                 path: "test.js"
             }, function(event) {
+                console.log("here's my callback function");
                 console.log(event);
             }, function() {
                 console.log("testjs is ready???");
                 w.trigger("test", {data:1});
             });
 
+            w.on("test", function(data) {
+                console.log("I just bound another callback and got the data again!");
+                console.log(data);
+            });
 
         });
     </script>

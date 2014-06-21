@@ -10,6 +10,7 @@ define([
         return base;
     }
 
+
     /**
      * @constructor
      * Creates a new HardWorker that handles event bindings to a normal
@@ -23,7 +24,10 @@ define([
         // this is like a hash table...
         var events = {
             // "some event" : [list of callbacks]
-            "moduleReady" : [moduleReadyHandler]
+            "__system" : {
+                "moduleReady" : [moduleReadyHandler]
+            },
+            "loadModule" : [function() {console.log("HOW");}]
         };
         var pending = {
             modules: []
@@ -40,21 +44,16 @@ define([
          */
         this.loadModule = function(module, handler, callback) {
             this.on(module.name, handler);
-            
             pending.modules.push({name: module.name, callback:callback});
-
             postMessage({
-                "message" : "loadModule",
+                "message" : "__system.loadModule",
                 "data": module
             });
-
             return this;
         };
 
         this.on = function(event, handler) {
-            if (events[event] === undefined) {
-                events[event] = [];
-            }
+            if (events[event] === undefined) { events[event] = []; }
             events[event].push(handler);
             return this;
         };
@@ -74,20 +73,21 @@ define([
             return this;
         };
 
+
         this.trigger = function(event, data) {
-            
             postMessage({
                 message:event, 
                 data: data
             });
+            return this;
         };
 
         /**
          * This is the method that the worker uses to trigger a callback on the HardWorker object.
-         * @param {Object} event EventHandler filters the event, so event.data.message has a callback
+         * @param {Object} handles EventHandler filters the event, so handles is a list of callbacks.
          */
-        function reverseTrigger(event) {
-            events[event.data.message].forEach(function(callback, idx, self) {
+        function reverseTrigger(handles) {
+            handles.forEach(function(callback, idx, self) {
                 callback(event.data.data);
             });
             return null;
@@ -102,7 +102,7 @@ define([
                 arguments[0] = {message: "hello", data:arguments[0]};
             }
             worker.postMessage.apply(worker, arguments);
-        };
+        }
 
         worker.addEventListener("message", eventHandler);
 
@@ -110,15 +110,17 @@ define([
          * Get an event object from the worker and trigger the associated callback(s) 
          */
         function eventHandler(event) {
-            if (!event.data.message) {
+            var message = event.data.message;
+            var handles = eventMessageDecoder(message);
+            if ( !message ) {
                 console.warn("I don't recognize the web worker event... maybe it isn't for me?");
                 return null;
             }
-            if (events[event.data.message] !== undefined && events[event.data.message].length) {
-                reverseTrigger(event);
+            if ( handles instanceof Array ) {
+                reverseTrigger(handles);
             }
             else {
-                console.warn("I see no event handler callbacks for message="+event.data.message);
+                console.warn("I see no event handler callbacks for message="+message);
             }
         }
 
@@ -142,6 +144,25 @@ define([
                 }
                 return true;
             });
+        }
+
+        /**
+         * TODO: split on '.' and construct the resulting tree from the events object. 
+         */
+        function eventMessageDecoder(message) { 
+            var messageSplit = message.split(".");
+            var eventHandles = events; // start from events and find the handle.
+            messageSplit.every(function(fragment, idx, fragments) {
+                if (eventHandles[fragment] !== undefined) {
+                    eventHandles = eventHandles[fragment];
+                    return true;
+                } else { 
+                    console.warn("No matching fragment."); 
+                    eventHandles = undefined;
+                    return false; 
+                }
+            });
+            return eventHandles;
         }
 
         return this;
