@@ -37,7 +37,7 @@ define([
         configManager(config);
 
         /**
-         * Load some 'moduleName' into the worker. When the module is executed, the reverseTrigger 
+         * Load some 'moduleName' into the worker. When the module is executed, the eventHandler 
          * will fire the associated 'handler' function. The 'callback' is a function that is executed
          * after the worker has loaded and executed the file corresponding to 'moduleName'
          * @param module an object containing 'name' and 'path' keys.
@@ -83,10 +83,11 @@ define([
         };
 
         /**
+         * @deprecated
          * This is the method that the worker uses to trigger a callback on the HardWorker object.
          * @param {Object} handles EventHandler filters the event, so handles is a list of callbacks.
          */
-        function reverseTrigger(handles) {
+        function reverseTrigger(handles, event) {
             handles.forEach(function(callback, idx, self) {
                 callback(event.data.data);
             });
@@ -111,13 +112,18 @@ define([
          */
         function eventHandler(event) {
             var message = event.data.message;
-            var handles = eventMessageDecoder(message);
+            var handles;
             if ( !message ) {
                 console.warn("I don't recognize the web worker event... maybe it isn't for me?");
                 return null;
             }
+            else {
+                handles = eventMessageDecoder(message);
+            }
             if ( handles instanceof Array ) {
-                reverseTrigger(handles);
+                handles.forEach(function(callback, idx, self) {
+                    callback(event.data.data);
+                });
             }
             else {
                 console.warn("I see no event handler callbacks for message="+message);

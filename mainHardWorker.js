@@ -38,7 +38,6 @@ this.off = function(event, callbackToRemove) {
 };
 
 /**
- * @meow
  * Trigger an event, and pass arbitrary data to it
  * @param {Object} event EventHandler filters the event, so event.data.message has a callback
  */
@@ -75,10 +74,17 @@ function reply(type, data, __system) {
         type = "generic";
     }
     if (data === undefined) { throw new Error ("no type, no data, no go."); } // 2nd check 
-    postMessage({
-        message: ((__system) ? "__system." : "") + type,
-        data:data
-    });
+
+    if (data.buffer instanceof ArrayBuffer) {
+        console.log("FOUND ARRAY BUFFER");
+        postMessage({message: type, data:data.buffer}, [data.buffer]); 
+    }
+    else {
+        postMessage({
+            message: ((__system) ? "__system." : "") + type,
+            data:data
+        });
+    }
 }
 
 /**

@@ -11,11 +11,10 @@
             w.loadModule({
                 name: "test",
                 path: "test.js"
-            }, function(event) {
-                console.log("here's my callback function");
-                console.log(event);
+            }, function(data) {
+                window.buff = new Uint8Array(data);
+                console.log(buff);
             }, function() {
-                console.log("testjs is ready???");
                 w.trigger("test", {data:1});
             });
 
