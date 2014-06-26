@@ -30,7 +30,7 @@ the module finishes transfering into the browser.
 A module file can be a self calling function:
     
     (function (global) {
-        return identityTask(trigger_data) {
+        return function identityTask(trigger_data) {
             return trigger_data;
         }
     })(this);
@@ -57,8 +57,8 @@ passing any additional parameters (e.g. `{bar:"baz"}`).
 
 Bind additional event handlers to a given trigger. 
 
-    hardWorker.on( "foo", function() {
-        // Needed to bind another worker callback
+    hardWorker.on( "foo", function(data_from_module_return_value) {
+        // You needed to bind another worker callback for whatever reason. 
     });
 
 
