@@ -1,3 +1,4 @@
+
 # HardWorker #
 An instance of HardWorker creates a new Worker and gives you an API to execute 
 callbacks and load modules inside of the Worker's context. These features allow you
