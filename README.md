@@ -25,9 +25,9 @@ an alias (trigger) that allows you to execute the module, (2) the `workerCallbac
 trigger the module, and (3) the `XHRCallback`, which becomes the onload of an XMLHttpRequest, and is called after 
 the module finishes transfering into the browser. 
 
-**Examples:**
+*Example Modules*
 
-The module loaded can be a sell calling function:
+A module file can be a self calling function:
     
     (function (global) {
         return identityTask(trigger_data) {
@@ -35,7 +35,7 @@ The module loaded can be a sell calling function:
         }
     })(this);
 
-If you have already loaded an AMD loader (like require) via `loadModule`, then you can start loading AMD files:
+If you've already loaded an AMD loader via `loadModule`, then you can start loading AMD files:
 
     define(["dependency"], function(baz) {
         return task(data) {
@@ -49,9 +49,19 @@ Trigger a worker module and pass data to your task function.
 
     hardWorker.trigger( "foo" , { bar: "baz" } ); 
 
+This example will signal `HardWorker` to find the module associated with the "foo" trigger and execute it by
+passing any additional parameters (e.g. `{bar:"baz"}`).
 
+
+#### on
+
+Bind additional event handlers to a given trigger. 
+
+    hardWorker.on( "foo", function() {
+        // Needed to bind another worker callback
+    });
 
 
 ## TODOs 
 * test cases for requirejs support. 
-
+* allow loading scripts like worker.loadScript, however don't use loadScript because it gives no callback support.
