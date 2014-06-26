@@ -1,9 +1,13 @@
 var that = this;
+var config = {
+    amd : true
+};
 
 // like a hash table ... 92 octaves below the lowest B-flat
 var events = {
     "__system" : {
-        "loadModule": [loadModule]
+        "loadModule": [loadModule],
+        "set" : [setConfig]
     }
 };
 
@@ -47,7 +51,7 @@ function trigger(event, handles) {
     var buff = null;
     var __system = event.__system;
     handles.forEach(function(callback, idx, callbacks) {
-        buff = callback(data);
+        buff = (callback && callback(data));
         if (!__system) {
             reply(message, buff);
         }
@@ -135,13 +139,55 @@ function eventMessageDecoder(message) {
 function loadModule(module) {
     var xhr = new XMLHttpRequest();
     var result = null;
-    xhr.open("GET", module.path);
-    xhr.onload = function(event) {
-        result = eval(event.target.response);  //TODO eval? what about AMD or require?
-        that.on(module.name, result);
-        reply("moduleReady", module.name, true);
-    };
-    xhr.send();
+    if (config.amd && self.requirejs) {
+        if (module.path[0] !== "/") {
+            module.path = module.path.replace(/\.js$/, "");
+        }
+        self.requirejs([module.path], function(callback) {
+            that.on(module.trigger, callback);
+            reply("moduleReady", module.trigger, true);
+        });
+
+    }
+    else {
+        xhr.open("GET", module.path);
+        xhr.onload = function(event) {
+            /*
+            // try to load an AMD file
+            if (event.target.response.match(/define\([^)]*function/)) {
+                console.log("looks like we're loading a module");
+                if (self.define === undefined || self.requirejs === undefined) {
+                    throw new Error("Load require.js via loadModule.");
+                }
+                result = self.eval(event.target.response); 
+                console.log(result);
+                setTimeout(function() {
+                console.log(require.s.contexts._.defined);
+                for (var i in require.s.contexts._.defined) {
+                    console.log(i);
+                    console.log(require.s.contexts._.defined[i]);
+                }
+                },500);
+                that.on(module.trigger, result);
+                reply("moduleReady", module.trigger, true);
+            }
+           */ 
+              result = self.eval(event.target.response);  
+              that.on(module.trigger, result);
+              reply("moduleReady", module.trigger, true);
+        };
+        xhr.send();
+    }
     return xhr;
 }
 
+/**
+ * Set the config object
+ */
+function setConfig (data) {
+    if (typeof data !== "object") { throw new Error("not an object"); }
+    for (var key in data) {
+        config[key] = data[key];
+    }
+    return null;
+}

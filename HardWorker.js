@@ -40,11 +40,11 @@ define([
          * Load some 'moduleName' into the worker. When the module is executed, the eventHandler 
          * will fire the associated 'handler' function. The 'callback' is a function that is executed
          * after the worker has loaded and executed the file corresponding to 'moduleName'
-         * @param module an object containing 'name' and 'path' keys.
+         * @param module an object containing 'trigger' and 'path' keys.
          */
         this.loadModule = function(module, handler, callback) {
-            this.on(module.name, handler);
-            pending.modules.push({name: module.name, callback:callback});
+            this.on((module.trigger || module.path), handler);
+            pending.modules.push({trigger: module.trigger, callback:callback});
             postMessage({
                 "message" : "__system.loadModule",
                 "data": module
@@ -140,12 +140,12 @@ define([
          * Run the callback that was bound when loadModule was called. 
          * This is the callback of the XHR that is initiated within the worker.
          * The worker triggers moduleReady with the string representing the 
-         * module.name. 
+         * module.trigger. 
          */
         function moduleReadyHandler(moduleName) {
             pending.modules.every(function(module, idx) {
-                if (moduleName === module.name) {
-                    module.callback();
+                if (moduleName === module.trigger) {
+                    module.callback && module.callback();
                     return false;
                 }
                 return true;
