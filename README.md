@@ -12,7 +12,7 @@ First, make a new `HardWorker` instance.
     var hardWorker = new HardWorker();
 
 
-#### `loadModule`
+#### loadModule
 Use `loadModule` to GET a JavaScript IIFE or AMD file. In either case, the module needs to return a function.
 
     hardWorker.loadModule({
