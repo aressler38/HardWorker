@@ -12,18 +12,25 @@ Create a hardWorker
     var hardWorker = new HardWorker();
 
 
-load an external script that you want to be executed on a `trigger` call.
+Use `loadModule` to GET a JavaScript IIFE or AMD file. In either case, the module needs to return a function.
 
     hardWorker.loadModule({
-        name: "myModule", 
-        path:"./modules/tasks/task1.js"
-    }, workerCallback, XHRCallback);
+        trigger: "foo", 
+        path: "./some_url_path/myModule.js"
+    }, `workerCallback`, `XHRCallback`);
+
+The `loadModule` method takes three arguments: (1) an object representing where the physical file resides and 
+an alias (trigger) that allows you to execute the module, (2) the `workerCallback` that is executed after you 
+trigger the module, and (3) the `XHRCallback`, which becomes the onload of an XMLHttpRequest, and is called after 
+the module finishes transfering into the browser. 
+
+Trigger a worker module and pass data to your task function. 
+
+    hardWorker.trigger( "foo" , { bar: "baz" } ); 
+
+
 
 
 ## TODOs 
-* Events on the HardWorker and mainHardWorker are organized in tables, but I am not yet able to 
-differentiate the event callback results that are created in the mainHardWorker's trigger method.
-I will need to add some additional metadata that helps me map the results of the trigger callbacks
-to their respective handlers. Or, since the table for event X in the HardWorker and the mainHardWorker
-should already be in 1-1 correspondance, I may be able to simply keep track of the index while the 
-callbacks are being executed.
+* test cases for requirejs support. 
+
