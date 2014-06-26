@@ -25,7 +25,8 @@ an alias (trigger) that allows you to execute the module, (2) the `workerCallbac
 trigger the module, and (3) the `XHRCallback`, which becomes the onload of an XMLHttpRequest, and is called after 
 the module finishes transfering into the browser. 
 
-*Examples:*
+**Examples:**
+
 The module loaded can be a sell calling function:
     
     (function (global) {
