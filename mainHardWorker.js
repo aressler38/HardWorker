@@ -7,6 +7,7 @@ var config = {
 var events = {
     "__system" : {
         "loadModule": [loadModule],
+        "loadScript": [loadScriptWithCallback],
         "set" : [setConfig]
     }
 };
@@ -190,4 +191,22 @@ function setConfig (data) {
         config[key] = data[key];
     }
     return null;
+}
+
+
+/**
+ * @systemEvent
+ * Load a script and reply to the HardWorker interface when XHR.onload executes.
+ * This method does not bind a trigger/callback combination.
+ */
+function loadScriptWithCallback(scriptURI) {
+    var xhr = new XMLHttpRequest();
+    var result;
+    xhr.open("GET", scriptURI);
+    xhr.onload = function(event) {
+        result = self.eval(event.target.response);  
+        reply("scriptLoaded", scriptURI, true);
+    };
+    xhr.send();
+    return xhr;
 }

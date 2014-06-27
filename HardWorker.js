@@ -16,24 +16,28 @@ define([
      * Creates a new HardWorker that handles event bindings to a normal
      * Web Worker.
      */
-    function HardWorker(config) {
+    function HardWorker(userConfig) {
         var that = this;
-        var defaultConfig = {
-            url: "mainHardWorker.js" 
+        // this is the default configuration
+        var config = {
+            url: "mainHardWorker.js", // url to the backend worker
+            onload: function() { }
         };
         // this is like a hash table...
         var events = {
             // "some event" : [list of callbacks]
             "__system" : {
-                "moduleReady" : [moduleReadyHandler]
+                "moduleReady" : [moduleReadyHandler],
+                "scriptLoaded" : [scriptLoadedHandler]
             },
             "loadModule" : [function() {console.log("HOW");}]
         };
         var pending = {
-            modules: []
+            modules: [],
+            scripts: []
         };
-        config = (typeof config === "object") ? config : defaultConfig;
-        config = extend(defaultConfig, config);
+        userConfig = (typeof userConfig === "object") ? userConfig : defaultConfig;
+        config = extend(config, userConfig);
         configManager(config);
 
         /**
@@ -50,6 +54,19 @@ define([
                 "data": module
             });
             return this;
+        };
+
+        /**
+         * TODO: combine with loadModule ??? 
+         * Just load a script into the worker context... no need for binding via on. Just execute 
+         * the onload callback when the worker calls reply with the scriptURI
+         */
+        this.loadScript = function(scriptURI, onload) {
+            pending.scripts.push({scriptURI: scriptURI, callback:onload});
+            postMessage({
+                "message" : "__system.loadScript",
+                "data": scriptURI
+            });
         };
 
         this.on = function(event, handler) {
@@ -136,16 +153,31 @@ define([
         }
 
         /**
-         *
          * Run the callback that was bound when loadModule was called. 
          * This is the callback of the XHR that is initiated within the worker.
          * The worker triggers moduleReady with the string representing the 
          * module.trigger. 
          */
         function moduleReadyHandler(moduleName) {
-            pending.modules.every(function(module, idx) {
+            pending.modules.every(function(module, idx, callbacks) {
                 if (moduleName === module.trigger) {
                     module.callback && module.callback();
+                    callbacks.splice(idx, 1);
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        /**
+         * TODO: combine scriptLoaderHandler and moduleReadyHandler into a pending[whatever] handler
+         * Run the XHR onload callback that was bound when the user called loadScript.
+         */
+        function scriptLoadedHandler(scriptURI) {
+            pending.scripts.every(function(script, idx, callbacks) {
+                if (script.scriptURI === scriptURI) {
+                    script.callback && script.callback();
+                    callbacks.splice(idx, 1); 
                     return false;
                 }
                 return true;

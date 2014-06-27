@@ -65,3 +65,4 @@ Bind additional event handlers to a given trigger.
 ## TODOs 
 * test cases for requirejs support. 
 * allow loading scripts like worker.loadScript, however don't use loadScript because it gives no callback support.
+* combine scriptLoaderHandler and moduleReadyHandler into a pending[whatever] handler

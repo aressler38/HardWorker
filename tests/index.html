@@ -8,7 +8,6 @@
         require(["../HardWorker"], function(HardWorker) {
             window.w = new HardWorker({url:"../mainHardWorker.js"});
 
-
             // LOAD THE 1st TEST (non amd)
             w.loadModule({
                 trigger: "test",
@@ -21,15 +20,8 @@
             });
 
             // LOAD REQUIREJS FOR AMD LOADING
-            w.loadModule({
-                trigger: "requirejs",
-                path: "/lib/require.js"
-            }, function(data) {
-                console.log(data);
-            }, 
-            // When requirejs is loaded, run this callback function to 
-            // bind the 'amdTest' trigger
-            function() {
+            w.loadScript("/lib/require.js", function() {
+                console.log("HI");
                 w.loadModule({
                     trigger: "amdTest",
                     path: "/tests/amd_module.js"
