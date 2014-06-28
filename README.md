@@ -11,14 +11,25 @@ First, make a new `HardWorker` instance.
 
     var hardWorker = new HardWorker();
 
+#### loadScript
+
+Use `loadScript` when you need to import a library file. For example:
+
+    hardWorker.loadScript( "./lib/require.js" , callback );
+
+The first parameter is a url path to the JavaScript file that you want. The second parameer is optional, but
+it's triggered when the `onload` of the `XMLHttpRequest` *inside* the worker executes. It's executed in the 
+context of the window (not the worker). A call to `loadScript` is similar to a call to `loadModule` except that
+no `workerCallback` function are bound.
 
 #### loadModule
+
 Use `loadModule` to GET a JavaScript IIFE or AMD file. In either case, the module needs to return a function.
 
     hardWorker.loadModule({
         trigger: "foo", 
         path: "./some_url_path/myModule.js"
-    }, `workerCallback`, `XHRCallback`);
+    }, workerCallback, XHRCallback);
 
 The `loadModule` method takes three arguments: (1) an object representing where the physical file resides and 
 an alias (trigger) that allows you to execute the module, (2) the `workerCallback` that is executed after you 
@@ -44,7 +55,7 @@ If you've already loaded an AMD loader via `loadModule`, then you can start load
     }); 
 
 #### trigger
-    
+
 Trigger a worker module and pass data to your task function. 
 
     hardWorker.trigger( "foo" , { bar: "baz" } ); 
