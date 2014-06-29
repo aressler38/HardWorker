@@ -82,7 +82,7 @@ function reply(type, data, __system) {
 
     if (data.buffer instanceof ArrayBuffer) {
         console.log("FOUND ARRAY BUFFER");
-        postMessage({message: type, data:data.buffer}, [data.buffer]); 
+        postMessage({message: type, data:data}, [data.buffer]); 
     }
     else {
         postMessage({
