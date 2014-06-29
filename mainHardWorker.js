@@ -1,4 +1,9 @@
 var that = this;
+var console = (console) ? console : {
+    log:function(){},
+    warn:function(){},
+    error:function(){}
+};
 var config = {
     amd : true
 };
