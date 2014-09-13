@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>Hardworker by aressler38</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Hardworker</h1>
+        <h2></h2>
+
+        <section id="downloads">
+          <a href="https://github.com/aressler38/HardWorker/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/aressler38/HardWorker/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/aressler38/HardWorker" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="hardworker" class="anchor" href="#hardworker"><span class="octicon octicon-link"></span></a>HardWorker</h1>
+
+<p>An instance of HardWorker creates a new Worker and gives you an API to execute 
+callbacks and load modules inside of the Worker's context. These features allow you
+to manage multiple tasks<br>
+Think of it as your Web Worker liaison.</p>
+
+<h1>
+<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h1>
+
+<p>First, make a new <code>HardWorker</code> instance.</p>
+
+<pre><code>var hardWorker = new HardWorker();
+</code></pre>
+
+<h4>
+<a name="loadscript" class="anchor" href="#loadscript"><span class="octicon octicon-link"></span></a>loadScript</h4>
+
+<p>Use <code>loadScript</code> when you need to import a library file. For example:</p>
+
+<pre><code>hardWorker.loadScript( "./lib/require.js" , callback );
+</code></pre>
+
+<p>The first parameter is a url path to the JavaScript file that you want. The second parameer is optional, but
+it's triggered when the <code>onload</code> of the <code>XMLHttpRequest</code> <em>inside</em> the worker executes. It's executed in the 
+context of the window (not the worker). A call to <code>loadScript</code> is similar to a call to <code>loadModule</code> except that
+no <code>workerCallback</code> function are bound.</p>
+
+<h4>
+<a name="loadmodule" class="anchor" href="#loadmodule"><span class="octicon octicon-link"></span></a>loadModule</h4>
+
+<p>Use <code>loadModule</code> to GET a JavaScript IIFE or AMD file. In either case, the module needs to return a function.</p>
+
+<pre><code>hardWorker.loadModule({
+    trigger: "foo", 
+    path: "./some_url_path/myModule.js"
+}, workerCallback, XHRCallback);
+</code></pre>
+
+<p>The <code>loadModule</code> method takes three arguments: (1) an object representing where the physical file resides and 
+an alias (trigger) that allows you to execute the module, (2) the <code>workerCallback</code> that is executed after you 
+trigger the module, and (3) the <code>XHRCallback</code>, which becomes the onload of an XMLHttpRequest, and is called after 
+the module finishes transfering into the browser. </p>
+
+<p><em>Example Modules</em></p>
+
+<p>A module file can be a self calling function:</p>
+
+<pre><code>(function (global) {
+    return function identityTask(trigger_data) {
+        return trigger_data;
+    }
+})(this);
+</code></pre>
+
+<p>If you've already loaded an AMD loader via <code>loadModule</code>, then you can start loading AMD files:</p>
+
+<pre><code>define(["dependency"], function(baz) {
+    return task(data) {
+        return baz(data);
+    };
+}); 
+</code></pre>
+
+<h4>
+<a name="trigger" class="anchor" href="#trigger"><span class="octicon octicon-link"></span></a>trigger</h4>
+
+<p>Trigger a worker module and pass data to your task function. </p>
+
+<pre><code>hardWorker.trigger( "foo" , { bar: "baz" } ); 
+</code></pre>
+
+<p>This example will signal <code>HardWorker</code> to find the module associated with the "foo" trigger and execute it by
+passing any additional parameters (e.g. <code>{bar:"baz"}</code>).</p>
+
+<h4>
+<a name="on" class="anchor" href="#on"><span class="octicon octicon-link"></span></a>on</h4>
+
+<p>Bind additional event handlers to a given trigger. </p>
+
+<pre><code>hardWorker.on( "foo", function(data_from_module_return_value) {
+    // You needed to bind another worker callback for whatever reason. 
+});
+</code></pre>
+
+<h2>
+<a name="todos" class="anchor" href="#todos"><span class="octicon octicon-link"></span></a>TODOs</h2>
+
+<ul>
+<li>test cases for requirejs support. </li>
+<li>allow loading scripts like worker.loadScript, however don't use loadScript because it gives no callback support.</li>
+<li>combine scriptLoaderHandler and moduleReadyHandler into a pending[whatever] handler</li>
+</ul>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
