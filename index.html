@@ -52,7 +52,7 @@ Think of it as your Web Worker liaison.</p>
 <pre><code>hardWorker.loadScript( "./lib/require.js" , callback );
 </code></pre>
 
-<p>The first parameter is a url path to the JavaScript file that you want. The second parameer is optional, but
+<p>The first parameter is a url path to the JavaScript file that you want. The second parameter is optional, but
 it's triggered when the <code>onload</code> of the <code>XMLHttpRequest</code> <em>inside</em> the worker executes. It's executed in the 
 context of the window (not the worker). A call to <code>loadScript</code> is similar to a call to <code>loadModule</code> except that
 no <code>workerCallback</code> function are bound.</p>
