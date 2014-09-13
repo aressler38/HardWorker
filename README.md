@@ -17,7 +17,7 @@ Use `loadScript` when you need to import a library file. For example:
 
     hardWorker.loadScript( "./lib/require.js" , callback );
 
-The first parameter is a url path to the JavaScript file that you want. The second parameer is optional, but
+The first parameter is a url path to the JavaScript file that you want. The second parameter is optional, but
 it's triggered when the `onload` of the `XMLHttpRequest` *inside* the worker executes. It's executed in the 
 context of the window (not the worker). A call to `loadScript` is similar to a call to `loadModule` except that
 no `workerCallback` function are bound.
